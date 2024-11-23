@@ -1,0 +1,256 @@
+[
+    {
+        "id": "39f77460159fb290",
+        "type": "tab",
+        "label": "Flow 5",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "74fa0cb9f09d2ed3",
+        "type": "mqtt in",
+        "z": "39f77460159fb290",
+        "name": "MQTT Broker",
+        "topic": "esp32/potencia",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "mqtt_broker",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 390,
+        "y": 220,
+        "wires": [
+            [
+                "33a628dfea0eeb5d"
+            ]
+        ]
+    },
+    {
+        "id": "33a628dfea0eeb5d",
+        "type": "json",
+        "z": "39f77460159fb290",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 570,
+        "y": 220,
+        "wires": [
+            [
+                "83a272f505da8d0f"
+            ]
+        ]
+    },
+    {
+        "id": "83a272f505da8d0f",
+        "type": "function",
+        "z": "39f77460159fb290",
+        "name": "Calcular Consumo",
+        "func": "let potencia = msg.payload.percentage;\n// Suponha que a potência máxima é 100W\nlet consumo = (potencia / 100) * 150; // Em watts\nmsg.payload = consumo;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 220,
+        "wires": [
+            [
+                "eb592bf1c0223c4d",
+                "29a981cba2ce915f"
+            ]
+        ]
+    },
+    {
+        "id": "eb592bf1c0223c4d",
+        "type": "ui_chart",
+        "z": "39f77460159fb290",
+        "name": "Gráfico de Consumo",
+        "group": "dashboard_group",
+        "order": 1,
+        "width": 6,
+        "height": 4,
+        "label": "Consumo em Tempo Real",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "Aguardando dados...",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "150",
+        "removeOlder": 1,
+        "removeOlderPoints": "100",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ff7f0e",
+            "#2ca02c",
+            "#1f77b4",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1000,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "29a981cba2ce915f",
+        "type": "ui_text",
+        "z": "39f77460159fb290",
+        "group": "dashboard_group",
+        "order": 2,
+        "width": 6,
+        "height": 2,
+        "name": "Consumo Atual",
+        "label": "Consumo Atual (Watts):",
+        "format": "{{msg.payload}} W",
+        "layout": "col-center",
+        "x": 980,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "de49185942e25499",
+        "type": "mqtt in",
+        "z": "39f77460159fb290",
+        "name": "MQTT Broker",
+        "topic": "esp32/dados",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "e62690ddc68d8f99",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "bce7f5a0ef34382f"
+            ]
+        ]
+    },
+    {
+        "id": "bce7f5a0ef34382f",
+        "type": "function",
+        "z": "39f77460159fb290",
+        "name": "Liga/Desliga",
+        "func": "// Verifica se o payload contém um objeto com a propriedade \"potencia\"\nif (msg.payload.potencia !== undefined) {\n    // Lógica: Se a potência for maior ou igual a 50, envia \"ON\", caso contrário \"OFF\"\n    if (msg.payload.potencia >= 50) {\n        msg.payload = \"on\";\n    } else {\n        msg.payload = \"off\";\n    }\n} else {\n    // Log de erro caso o payload esteja inválido\n    node.error(\"Payload inválido! Esperado: { potencia: valor }\");\n    return null; // Interrompe o fluxo\n}\n\nreturn msg; // Envia a mensagem processada\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 340,
+        "wires": [
+            [
+                "642d5ada993c8b2f"
+            ]
+        ]
+    },
+    {
+        "id": "642d5ada993c8b2f",
+        "type": "mqtt out",
+        "z": "39f77460159fb290",
+        "name": "MQTT Broker",
+        "topic": "esp32/control",
+        "qos": "0",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "e62690ddc68d8f99",
+        "x": 780,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "mqtt_broker",
+        "type": "mqtt-broker",
+        "name": "Broker Mosquitto",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": ""
+    },
+    {
+        "id": "dashboard_group",
+        "type": "ui_group",
+        "name": "Monitoramento",
+        "tab": "dashboard_tab",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "e62690ddc68d8f99",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "sessionExpiry": ""
+    },
+    {
+        "id": "dashboard_tab",
+        "type": "ui_tab",
+        "name": "Energia Sustentável",
+        "icon": "dashboard",
+        "order": 1
+    }
+]
